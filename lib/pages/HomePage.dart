@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'package:farm_pro/Utilities/CustomWidgets.dart';
 import 'package:farm_pro/Utilities/custom.dart';
 import 'package:farm_pro/sample_details.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:farm_pro/pages/details_card.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key,required this.detail});
@@ -15,6 +17,56 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+  final searchController = TextEditingController();
+
+  String query='';
+  List<String> searchResults=details.keys.toList();
+  void onQueryChanged(String query){
+    setState(() {
+      if(query==''){
+        searchResults= widget.detail.keys.toList();
+      }
+      else{
+        searchResults.clear();
+        for (var i in widget.detail.keys) {
+          if (i.toLowerCase().contains(query.toLowerCase())) {
+            searchResults.add(i);
+          }
+        }
+      }
+
+      debugPrint(query);
+      for(var i in searchResults){
+        debugPrint(i);
+      }
+
+    });
+  }
+
+  void textClearance(){
+    setState(() {
+
+
+    });
+  }
+  Widget displayeHomePageCards(){
+
+    return Column(
+      children:[
+        for(var i in searchResults)
+            HomePageCard(detail: widget.detail['$i']),
+
+      ]
+    );
+  }
+
+
+
+  void dispose(){
+    searchController.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,30 +76,57 @@ class _HomePageState extends State<HomePage> {
           VerticalPadding(paddingSize: 60),
 
           Padding(padding: EdgeInsets.symmetric(horizontal: 20),
-            child: TextFormField(
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Farmer name',
-                // fillColor: Colors.tealAccent[700],
-                //focusColor: Colors.tealAccent,
+            child: TextField(
+              onChanged: onQueryChanged,
+              controller: searchController,
+              style: GoogleFonts.signikaNegative(
+                textStyle: MyTextTheme.displaySmall,
               ),
-              style: TextStyle(
-                color: Colors.teal[100],
+              decoration: InputDecoration(
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.white54,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.white,
+                  ),
+                ),
+
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(5),
+                  borderSide: BorderSide(//color: Colors.white
+                  ),
+                ),
+                hintText: 'Farmer name',
+                prefixIcon: Icon(Icons.search, color: Colors.white,),
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      searchController.text='';
+                      searchResults= widget.detail.keys.toList();
+                      FocusScope.of(context).unfocus();
+                    });
+
+                  },
+                  icon: Icon(Icons.clear,color: Colors.white,),
+                ),
+
               ),
               textAlign: TextAlign.left,
             ),),
           VerticalPadding(paddingSize: 11),
           Container(
 
-            height: 665,
+            height: 663,
             child: SingleChildScrollView(
                 child: Container(
                   width: 500,
                   color: darkTeal,
                   child: Column(
                     children: [
-                      for(var i in widget.detail.values)
-                        HomePageCard(detail: i)
+                      displayeHomePageCards(),
                     ],
                   ),
 
@@ -58,7 +137,9 @@ class _HomePageState extends State<HomePage> {
       ),
 
     );
+
   }
+
 }
 
 class HomePageCard extends StatefulWidget {
